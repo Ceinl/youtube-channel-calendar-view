@@ -1,0 +1,500 @@
+/* =============================================================================
+ * YouTube Channel Calendar View — styles
+ * All rules are scoped under .cv-chip / #cv-root so we never touch YouTube's UI.
+ * ========================================================================== */
+
+/* ---- the injected chip (matches the New / Popular / Oldest chips) -------- */
+.cv-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  margin: 0 0 0 12px;
+  border: none;
+  border-radius: 8px;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 32px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+  transition: background 0.15s ease, transform 0.08s ease;
+  -webkit-font-smoothing: antialiased;
+}
+.cv-chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.cv-chip:active {
+  transform: scale(0.97);
+}
+
+/* light theme fallback */
+html:not([dark]) .cv-chip {
+  color: #0f0f0f;
+  background: rgba(0, 0, 0, 0.05);
+}
+html:not([dark]) .cv-chip:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ---- overlay root -------------------------------------------------------- */
+#cv-root {
+  --cv-bg: #0f0f0f;
+  --cv-panel: #181818;
+  --cv-elev: #212121;
+  --cv-line: #303030;
+  --cv-text: #f1f1f1;
+  --cv-dim: #aaaaaa;
+  --cv-accent: #3ea6ff;
+  --cv-danger: #ff4e45;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--cv-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* explicit display rules below would otherwise beat the UA [hidden] rule */
+#cv-root [hidden] {
+  display: none !important;
+}
+
+#cv-root .cv-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+#cv-root .cv-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(1080px, 94vw);
+  height: min(880px, 92vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--cv-panel);
+  border: 1px solid var(--cv-line);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+/* ---- header -------------------------------------------------------------- */
+#cv-root .cv-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cv-line);
+}
+#cv-root .cv-titlewrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+#cv-root .cv-title {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
+}
+#cv-root .cv-subtitle {
+  font-size: 12px;
+  color: var(--cv-dim);
+  margin-top: 2px;
+}
+#cv-root .cv-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- buttons ------------------------------------------------------------- */
+#cv-root .cv-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--cv-line);
+  border-radius: 18px;
+  background: var(--cv-elev);
+  color: var(--cv-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+#cv-root .cv-btn:hover:not(:disabled) {
+  background: #2d2d2d;
+  border-color: #505050;
+}
+#cv-root .cv-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+#cv-root .cv-iconbtn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cv-text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+#cv-root .cv-iconbtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---- month nav ----------------------------------------------------------- */
+#cv-root .cv-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--cv-line);
+}
+#cv-root .cv-month-label {
+  font-size: 17px;
+  font-weight: 700;
+  min-width: 180px;
+  text-align: center;
+  text-transform: capitalize;
+}
+#cv-root .cv-month-select {
+  height: 34px;
+  max-width: 200px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--cv-line);
+  background: var(--cv-elev);
+  color: var(--cv-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+#cv-root .cv-latest {
+  margin-left: auto;
+}
+
+/* ---- body / calendar ----------------------------------------------------- */
+#cv-root .cv-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 20px 20px;
+}
+#cv-root .cv-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+#cv-root .cv-wd {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cv-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#cv-root .cv-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 8px;
+}
+
+#cv-root .cv-day {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cv-elev);
+  border: 1px solid var(--cv-line);
+}
+#cv-root .cv-day.cv-blank {
+  background: transparent;
+  border: none;
+}
+#cv-root .cv-day.cv-empty-day {
+  background: #1a1a1a;
+}
+#cv-root .cv-day.cv-today {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: -2px;
+}
+#cv-root .cv-daynum {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  z-index: 3;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cv-text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+#cv-root .cv-empty-day .cv-daynum {
+  color: #6f6f6f;
+  text-shadow: none;
+}
+#cv-root .cv-approx {
+  color: var(--cv-accent);
+  margin-left: 2px;
+}
+
+#cv-root .cv-day.cv-has {
+  cursor: pointer;
+  border-color: transparent;
+}
+#cv-root .cv-day.cv-has:hover {
+  outline: 2px solid var(--cv-text);
+  outline-offset: -2px;
+}
+#cv-root .cv-thumb,
+#cv-root .cv-collage,
+#cv-root .cv-ct {
+  position: absolute;
+  inset: 0;
+}
+#cv-root .cv-thumb,
+#cv-root .cv-ct {
+  background-size: cover;
+  background-position: center;
+  background-color: #000;
+}
+#cv-root .cv-collage {
+  display: grid;
+  gap: 1px;
+}
+#cv-root .cv-collage.cv-n2 {
+  grid-template-columns: 1fr 1fr;
+}
+#cv-root .cv-collage.cv-n3 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+#cv-root .cv-collage.cv-n3 .cv-ct:first-child {
+  grid-row: span 2;
+}
+#cv-root .cv-collage.cv-n4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+#cv-root .cv-badge {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  z-index: 3;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--cv-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+#cv-root .cv-daytitle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 14px 8px 6px;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.88));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- loading / empty ----------------------------------------------------- */
+#cv-root .cv-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--cv-dim);
+}
+#cv-root .cv-spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid var(--cv-line);
+  border-top-color: var(--cv-accent);
+  border-radius: 50%;
+  animation: cv-spin 0.8s linear infinite;
+}
+@keyframes cv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+#cv-root .cv-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--cv-dim);
+  font-size: 15px;
+}
+
+/* ---- footer -------------------------------------------------------------- */
+#cv-root .cv-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--cv-line);
+  font-size: 12px;
+  color: var(--cv-dim);
+  min-height: 20px;
+}
+#cv-root .cv-foot:empty {
+  display: none;
+}
+
+/* ---- day detail layer ---------------------------------------------------- */
+#cv-root .cv-day-detail {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+#cv-root .cv-day-detail-inner {
+  width: min(560px, 92vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cv-panel);
+  border: 1px solid var(--cv-line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+#cv-root .cv-dd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--cv-line);
+}
+#cv-root .cv-dd-title {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+#cv-root .cv-dd-count {
+  color: var(--cv-dim);
+  font-weight: 500;
+  text-transform: none;
+}
+#cv-root .cv-dd-approx {
+  color: var(--cv-accent);
+  font-weight: 600;
+  font-size: 12px;
+}
+#cv-root .cv-dd-list {
+  overflow: auto;
+  padding: 8px;
+}
+#cv-root .cv-row {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+#cv-root .cv-row:hover {
+  background: var(--cv-elev);
+}
+#cv-root .cv-row-thumb {
+  position: relative;
+  flex: 0 0 160px;
+  height: 90px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  background-color: #000;
+}
+#cv-root .cv-row-dur {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 11px;
+  font-weight: 600;
+}
+#cv-root .cv-row-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#cv-root .cv-row-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#cv-root .cv-row-meta,
+#cv-root .cv-row-date {
+  font-size: 12px;
+  color: var(--cv-dim);
+}
+
+/* light theme for the overlay (channels themed light) */
+html:not([dark]) #cv-root {
+  --cv-bg: #ffffff;
+  --cv-panel: #ffffff;
+  --cv-elev: #f2f2f2;
+  --cv-line: #e0e0e0;
+  --cv-text: #0f0f0f;
+  --cv-dim: #606060;
+}
+html:not([dark]) #cv-root .cv-day.cv-empty-day {
+  background: #f7f7f7;
+}
+html:not([dark]) #cv-root .cv-iconbtn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}

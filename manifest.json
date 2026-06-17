@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Channel Calendar View",
+  "version": "1.0.0",
+  "description": "Adds a Calendar chip to a YouTube channel's Videos tab. Browse a channel's uploads month-by-month with a thumbnail on each release day.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
+      "js": ["src/content.js"],
+      "css": ["src/calendar.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
