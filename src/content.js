@@ -1,5 +1,5 @@
 /* =============================================================================
- * YouTube Channel Calendar View
+ * Calendar View for YouTube
  * -----------------------------------------------------------------------------
  * Injects a "Calendar" chip next to the New / Popular / Oldest filter chips on a
  * channel's Videos tab. Clicking it opens a month calendar where each day shows
@@ -1048,32 +1048,46 @@
     return VIDEOS_PATH_RE.test(location.pathname);
   }
 
+  function isVisible(el) {
+    if (!el || !el.isConnected) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  }
+
   function findChipBar() {
     // Current layout: New / Popular / Oldest chips are <chip-shape> elements
     // inside a flex scroll container in the rich-grid header.
-    const scoped = document.querySelector(
-      "ytd-rich-grid-renderer #header .ytChipBarViewModelChipBarScrollContainer"
-    );
-    if (scoped) return scoped;
-
-    return (
-      document.querySelector(".ytChipBarViewModelChipBarScrollContainer") ||
-      document.querySelector("chip-bar-view-model > div") ||
+    const candidates = [
+      ...document.querySelectorAll(
+        "ytd-rich-grid-renderer #header .ytChipBarViewModelChipBarScrollContainer"
+      ),
+      ...document.querySelectorAll(".ytChipBarViewModelChipBarScrollContainer"),
+      ...document.querySelectorAll("chip-bar-view-model > div"),
       // Older layout fallback.
-      document.querySelector("ytd-feed-filter-chip-bar-renderer #chips") ||
-      document.querySelector("ytd-feed-filter-chip-bar-renderer") ||
+      ...document.querySelectorAll("ytd-feed-filter-chip-bar-renderer #chips"),
+      ...document.querySelectorAll("ytd-feed-filter-chip-bar-renderer"),
       // Last resort: whatever row currently holds a chip.
-      (() => {
-        const chip = document.querySelector(
-          ".ytChipShapeChip, yt-chip-cloud-chip-renderer"
-        );
-        if (!chip) return null;
-        return (
+      ...Array.from(
+        document.querySelectorAll(".ytChipShapeChip, yt-chip-cloud-chip-renderer")
+      )
+        .map((chip) =>
           chip.closest(".ytChipBarViewModelChipBarScrollContainer, #chips") ||
           chip.closest('[class*="ScrollContainer"]') ||
           chip.parentElement
+        )
+        .filter(Boolean),
+    ];
+
+    return (
+      candidates.find((bar) => {
+        if (!isVisible(bar)) return false;
+        return bar.querySelector(
+          ".ytChipShapeChip, yt-chip-cloud-chip-renderer, [role='tab'], button"
         );
-      })()
+      }) ||
+      candidates.find(isVisible) ||
+      candidates[0] ||
+      null
     );
   }
 
@@ -1097,9 +1111,15 @@
       if (existing) existing.remove();
       return;
     }
-    if (existing && existing.isConnected) return;
     const bar = findChipBar();
     if (!bar) return;
+    if (existing && existing.isConnected) {
+      if (existing.parentElement !== bar || !isVisible(existing)) {
+        existing.remove();
+        bar.appendChild(makeChip());
+      }
+      return;
+    }
     bar.appendChild(makeChip());
   }
 
@@ -1118,9 +1138,30 @@
     });
   }
 
-  window.addEventListener("yt-navigate-finish", schedule);
-  window.addEventListener("yt-page-data-updated", schedule);
-  document.addEventListener("yt-action", schedule);
+  function scheduleSoon() {
+    schedule();
+    setTimeout(schedule, 250);
+    setTimeout(schedule, 750);
+    setTimeout(schedule, 1500);
+  }
+
+  window.addEventListener("yt-navigate-start", scheduleSoon);
+  window.addEventListener("yt-navigate-finish", scheduleSoon);
+  window.addEventListener("yt-page-data-updated", scheduleSoon);
+  window.addEventListener("popstate", scheduleSoon);
+  document.addEventListener("yt-action", scheduleSoon);
+
+  const { pushState, replaceState } = history;
+  history.pushState = function (...args) {
+    const ret = pushState.apply(this, args);
+    scheduleSoon();
+    return ret;
+  };
+  history.replaceState = function (...args) {
+    const ret = replaceState.apply(this, args);
+    scheduleSoon();
+    return ret;
+  };
 
   const mo = new MutationObserver(schedule);
   mo.observe(document.documentElement, { childList: true, subtree: true });
